@@ -1,0 +1,128 @@
+#include "FastLED.h"
+
+#define NUM_LEDS 64
+#define DATA_PIN 3
+#define DATA_PIN2 4
+#define DATA_PIN3 5
+#define DATA_PIN4 6
+
+CRGB leds[NUM_LEDS];
+CRGB leds2[NUM_LEDS];
+
+int timer;
+int ding;
+int x;
+int y;
+int height;
+int width;
+boolean vdown;
+boolean hleft;
+
+float grav;
+float realY;
+float realX;
+float yVec;
+float xVec;
+
+void timerFunction(int xx, int yy) {//Denne funktion tager 2 ints, som agerer koordinater i beregningerne. Hver anden vertikale linje
+Serial.println(realY);
+  for (int i = 0; i < NUM_LEDS; i++) //skal "vendes om", da boardet læser fra venstre mod højre på hveranden linje.
+  {
+    leds[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
+    leds2[i] = CRGB(0, 0, 10);
+  }
+
+  if (realX > 7)
+  {
+    if (yy % 2 == 0)//hvis du er på en ulige linje, så byt x-aksen om
+    {
+      leds[(yy * 8) + xx] = CRGB(20, 0, 0);
+    }
+    else
+    {
+      leds[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
+    }
+  }
+  
+  if (realX <=7)
+  {
+    if (yy % 2 == 0)//hvis du er på en ulige linje, så byt x-aksen om
+    {
+      leds2[(yy * 8) + xx] = CRGB(0, 20, 0);
+    }
+    else
+    {
+      leds2[(yy * 8) + (7 - xx)] = CRGB(0, 20, 0);
+    }    
+  }
+}
+
+void setup() {
+  height = 7; //mængden af horisontale pixels
+  width = 15; //mængden af vertikale pixels
+  x = 3; //x-pixel, fra venstre
+  y = 2; //y-pixel, fra toppen
+
+  grav = 0.03; //tyngdekraft
+  realX = 3; //den "ægte" x. x og y rundes ned eller op til det nærmeste heltal fra realX og realY for at fortælle, hvilken pixel, der skal lyses op
+  realY = 2; //den "ægte" y.
+  yVec = 0; //den vertikale vector
+  xVec = 0; //den horisontale vector
+
+
+  ding = 0;
+  Serial.begin(9600);
+  // put your setup code here, to run once:
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN2>(leds2, NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN3>(leds, NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN4>(leds, NUM_LEDS);
+
+  timer = ding + 30;
+}
+
+void loop() {
+  timerFunction(x, y);
+
+  //HORISONTAL MOVEMENT
+  xVec += 0.02;gith
+  realX += xVec;
+  if (realX >= width)
+  {
+    realX = width;
+    xVec = -xVec;
+  }
+  if (realX <= 0)
+  {
+    realX = 0;
+    xVec = -xVec;
+  }
+
+  //VERTICAL MOVEMENt
+
+  yVec += grav;
+  realY += yVec;
+  delay(200);
+  if (realY >= height)
+  {
+    realY = height;
+    yVec = -yVec;
+  }
+  if (realY <= 0)
+  {
+    realY = 0;
+    yVec = -yVec;
+  }
+  x = round(realX);
+  y = ceil(realY);
+
+
+  if (x == width && y == height)
+  {
+    xVec = -0.8;
+    yVec = -0.7;
+  }
+  FastLED.show();
+}
+
+
