@@ -11,11 +11,11 @@
 #define JOYSTICKY A1
 
 /*class SingleScreen
-{
+  {
   int screenPos;
   public : int ref [1];
   public : int references [7];
-  
+
   public:
   SingleScreen(int pos)
   {
@@ -26,7 +26,7 @@
   {
     if(screenPos == 1)
     {
-        
+
         for(int i = 7; i > 0; i--)
         {
           references[i] = ref[0] = i;
@@ -34,7 +34,7 @@
         }
     }
   }
-};*/
+  };*/
 
 CRGB leds[NUM_LEDS];
 CRGB leds2[NUM_LEDS];
@@ -62,6 +62,9 @@ float maxVspeed = 1;
 float friction = 0.01;
 float deacc = 200;
 
+//Determines what screen is drawn on
+int currentScreen = 1;
+
 //For Joystick
 int range = 12;
 int threshold = range / 4;
@@ -69,26 +72,75 @@ int center = range / 2;
 
 
 void lightPixels(int xx, int yy, int prevX, int prevY) { //Denne funktion tager 2 ints, som agerer koordinater i beregningerne. Hver anden vertikale linje
-  for (int i = 0; i < NUM_LEDS; i++) //skal "vendes om", da boardet læser fra venstre mod højre på hveranden linje.
+  //skal "vendes om", da boardet læser fra venstre mod højre på hveranden linje.
+
+  for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
-    leds2[i] = CRGB(0, 0, 10);
-    leds3[i] = CRGB(0, 0, 10);
-    leds4[i] = CRGB(0, 0, 10);
+    leds2[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
+    leds3[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
+    leds4[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
   }
-  if (yy % 2 == 0)//hvis du er på en ulige linje, så byt x-aksen om
-  {
-    leds[(yy * 8) + xx] = CRGB(20, 0, 0);
-    leds2[(yy * 8) + xx] = CRGB(20, 0, 0);
-    leds3[(yy * 8) + xx] = CRGB(20, 0, 0);
-    leds4[(yy * 8) + xx] = CRGB(20, 0, 0);
+
+
+  //SCREEN 1
+  if (currentScreen == 1) {
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds2[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
+      leds3[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
+      leds4[i] = CRGB(0, 0, 10); //Farv alle ikke-relevante pixels sorte
+    }
+    if (yy % 2 == 0) { //hvis du er på en ulige linje, så byt x-aksen om
+      leds[(yy * 8) + xx] = CRGB(20, 0, 0);
+    }
+    else {
+      leds[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
+    }
   }
-  else
-  {
-    leds[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
-    leds2[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
-    leds3[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
-    leds4[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
+
+  //SCREEN 2
+  if (currentScreen == 2) {
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB(0, 0, 10);
+      leds3[i] = CRGB(0, 0, 10);
+      leds4[i] = CRGB(0, 0, 10);
+    }
+    if (yy % 2 == 0) {
+      leds2[(yy * 8) + xx] = CRGB(20, 0, 0);
+    }
+    else {
+      leds2[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
+    }
+  }
+
+  //SCREEN 3
+  if (currentScreen == 3) {
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds2[i] = CRGB(0, 0, 10);
+      leds[i] = CRGB(0, 0, 10);
+      leds4[i] = CRGB(0, 0, 10);
+    }
+    if (yy % 2 == 0) {
+      leds3[(yy * 8) + xx] = CRGB(20, 0, 0);
+    }
+    else {
+      leds3[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
+    }
+  }
+
+  //SCREEN 4
+  if (currentScreen == 4) {
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds2[i] = CRGB(0, 0, 10);
+      leds3[i] = CRGB(0, 0, 10);
+      leds[i] = CRGB(0, 0, 10);
+    }
+    if (yy % 2 == 0) {
+      leds4[(yy * 8) + xx] = CRGB(20, 0, 0);
+    }
+    else {
+      leds4[(yy * 8) + (7 - xx)] = CRGB(20, 0, 0);
+    }
   }
 }
 
@@ -115,8 +167,8 @@ void setup() {
   width = 7; //mængden af vertikale pixels
   x = 3; //x-pixel, fra venstre
   y = 2; //y-pixel, fra toppen
-  prevX=0;
-  prevY=0;
+  prevX = 0;
+  prevY = 0;
 
   //grav = 0.05; //tyngdekraft
   realX = 3; //den "ægte" x. x og y rundes ned eller op til det nærmeste heltal fra realX og realY for at fortælle, hvilken pixel, der skal lyses op
@@ -126,7 +178,7 @@ void setup() {
 
   //SingleScreen ss(1);
   //ss.instantiate();
-  
+
   Serial.begin(9600);
   // put your setup code here, to run once:
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
@@ -145,24 +197,49 @@ void loop() {
 
   //Serial.println(xReading);
   //HORISONTAL MOVEMENT
-  xVec += xReading/deacc;
+  xVec += xReading / deacc;
   realX += xVec;
   if (realX >= width)
   {
-    realX = width;
-    xVec = -xVec;
+    if (currentScreen == 4)
+    {
+      realX = width;
+      xVec = -xVec;
+    }
+    else
+    {
+      currentScreen += 1;
+      realX = 1;
+      x = 1;
+      Serial.print("Current Screen: ");
+      Serial.println(currentScreen);
+      delay(200);
+    }
   }
+
   if (realX <= 0)
   {
-    realX = 0;
-    xVec = -xVec;
+    if (currentScreen == 1)
+    {
+      realX = 0;
+      xVec = -xVec;
+    }
+    else
+    {
+      currentScreen -= 1;
+      realX = 6;
+      x = 6;
+      Serial.print("Current Screen: ");
+      Serial.println(currentScreen);
+      delay(200);
+    }
   }
+  Serial.println(realX);
 
   //VERTICAL MOVEMENt
-
-  yVec += yReading/deacc;
+  yVec += yReading / deacc;
   realY += yVec;
-  
+
   if (realY >= height)
   {
     realY = height;
@@ -173,15 +250,23 @@ void loop() {
     realY = 0;
     yVec = -yVec;
   }
-  
+
   x = round(realX);
   y = ceil(realY);
 
- // FRICTION
- if (xVec>0.05) {xVec-=friction;}
- if (xVec<-0.05) {xVec+=friction;}
- if (yVec>0.05) {yVec-=friction;}
- if (yVec<-0.05) {yVec+=friction;}
+  // FRICTION
+  if (xVec > 0.05) {
+    xVec -= friction;
+  }
+  if (xVec < -0.05) {
+    xVec += friction;
+  }
+  if (yVec > 0.05) {
+    yVec -= friction;
+  }
+  if (yVec < -0.05) {
+    yVec += friction;
+  }
   FastLED.show();
   delay(20);
 }
