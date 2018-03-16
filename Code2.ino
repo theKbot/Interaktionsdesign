@@ -6,7 +6,6 @@
 #define DATA_PIN3 6
 #define DATA_PIN4 7
 
-
 #define JOYSTICKX A0
 #define JOYSTICKY A1
 
